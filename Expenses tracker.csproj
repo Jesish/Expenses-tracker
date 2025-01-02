@@ -64,4 +64,13 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Images\" />
+      <Folder Include="Platforms\NewFolder\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Include="wwwroot\chart-with-magnifier.jpg" />
+    </ItemGroup>
+
 </Project>
