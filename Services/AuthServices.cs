@@ -12,8 +12,9 @@ namespace Expenses_tracker.Services
 {
     public class AuthServices
     {
-        public const string FilePath = "C:\\Users\\sthar\\OneDrive\\Desktop\\Expenses-tracker\\Database\\users.json";  // Path to store user data as JSON
-        
+        //public const string FilePath = "C:\\Users\\sthar\\OneDrive\\Desktop\\Expenses-tracker\\Database\\users.json";  // Path to store user data as JSON
+        public const string FilePath = "C:\\Users\\CHME\\Desktop\\Expenses tracker\\Database\\users.json";  // Path to store user data as JSON
+
         // Load users from JSON file
         public List<User> FetchAllUsers()
         {

@@ -25,5 +25,14 @@
     "TotalBalance": 0,
     "Transactions": [],
     "Debts": []
+  },
+  {
+    "Id": "313302ba-5a94-40c7-bb52-10ed6e8634e1",
+    "Username": "doraemon",
+    "Password": "WZRHGrsBESr8wYFZ9sx0tPURuZgG2lmzyvWpwXPKz8U=",
+    "type": "NRP",
+    "TotalBalance": 0,
+    "Transactions": [],
+    "Debts": []
   }
 ]
