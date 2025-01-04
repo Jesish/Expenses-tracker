@@ -1,0 +1,140 @@
+﻿@page "/transactions"
+
+<div class="container mt-4">
+    <!-- Add Income and Expense Buttons -->
+    <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-outline-dark me-2" type="button" data-bs-toggle="modal" data-bs-target="#addIncomeModal">+ Add Income</button>
+        <button class="btn btn-dark" type="button" data-bs-toggle="modal" data-bs-target="#addExpenseModal">+ Add Expense</button>
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+        <div class="d-flex flex-wrap">
+            <!-- Search Box -->
+            <input type="text"
+                   class="form-control me-2 mb-2"
+                   placeholder="Search by title, tags, or notes"
+                   @bind="SearchTerm"
+                   style="min-width: 250px;" />
+
+            <!-- Transaction Type Filter -->
+            <select class="form-select me-2 mb-2" @bind="SelectedType" style="min-width: 150px;">
+                <option value="">All Types</option>
+                <option value="Income">Income</option>
+                <option value="Expense">Expense</option>
+                <option value="Debt">Debt</option>
+            </select>
+
+            <!-- Date Range Filter -->
+            <div class="d-flex align-items-center mb-2">
+                <input type="date"
+                       class="form-control me-2"
+                       @bind="StartDate"
+                       style="min-width: 150px;" />
+                <span class="me-2">to</span>
+                <input type="date"
+                       class="form-control"
+                       @bind="EndDate"
+                       style="min-width: 150px;" />
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="table-responsive">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th @onclick="() => SortByColumn(nameof(TransactionItem.Date))">Date</th>
+                    <th @onclick="() => SortByColumn(nameof(TransactionItem.Description))">Title</th>
+                    <th @onclick="() => SortByColumn(nameof(TransactionItem.Type))">Type</th>
+                    <th @onclick="() => SortByColumn(nameof(TransactionItem.Amount))">Amount</th>
+                    <th @onclick="() => SortByColumn(nameof(TransactionItem.Tags))">Tags</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transaction in FilteredTransactions)
+                {
+                    <tr>
+                        <td>@transaction.Date.ToString("MMM dd, yyyy")</td>
+                        <td>@transaction.Description</td>
+                        <td>@transaction.Type</td>
+                        <td>@transaction.Amount</td>
+                        <td>@string.Join(", ", transaction.Tags)</td>
+                        <td>@transaction.Notes</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- AddIncome Modal -->
+    <AddIncome />
+
+    <!-- AddExpense Modal -->
+    <AddExpense />
+</div>
+
+@code {
+    private string SearchTerm { get; set; } = "";
+    private string SelectedType { get; set; } = "";
+    private DateTime? StartDate { get; set; }
+    private DateTime? EndDate { get; set; }
+    private string SortColumn { get; set; } = "";
+    private bool IsAscending { get; set; } = true;
+
+    private List<TransactionItem> Transactions { get; set; } = new();
+    private List<TransactionItem> FilteredTransactions => Transactions
+        .Where(t =>
+            (string.IsNullOrEmpty(SearchTerm) ||
+             t.Description.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+             t.Tags.Any(tag => tag.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)) ||
+             t.Notes.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(SelectedType) || t.Type == SelectedType) &&
+            (!StartDate.HasValue || t.Date >= StartDate) &&
+            (!EndDate.HasValue || t.Date <= EndDate))
+        .OrderBy(t => SortColumn == nameof(TransactionItem.Date) && IsAscending ? t.Date : DateTime.MinValue)
+        .ThenByDescending(t => SortColumn == nameof(TransactionItem.Date) && !IsAscending ? t.Date : DateTime.MinValue)
+        .ThenBy(t => SortColumn == nameof(TransactionItem.Description) && IsAscending ? t.Description : "")
+        .ThenByDescending(t => SortColumn == nameof(TransactionItem.Description) && !IsAscending ? t.Description : "")
+        .ThenBy(t => SortColumn == nameof(TransactionItem.Type) && IsAscending ? t.Type : "")
+        .ThenByDescending(t => SortColumn == nameof(TransactionItem.Type) && !IsAscending ? t.Type : "")
+        .ThenBy(t => SortColumn == nameof(TransactionItem.Amount) && IsAscending ? t.Amount : decimal.MinValue)
+        .ThenByDescending(t => SortColumn == nameof(TransactionItem.Amount) && !IsAscending ? t.Amount : decimal.MinValue)
+        .ToList();
+
+    protected override void OnInitialized()
+    {
+        // Sample Data
+        Transactions = new List<TransactionItem>
+        {
+            new() { Date = DateTime.Now, Description = "Salary", Type = "Income", Amount = 5000, Tags = new List<string> { "Monthly", "Salary" }, Notes = "Paid by employer" },
+            new() { Date = DateTime.Now.AddDays(-5), Description = "Rent", Type = "Expense", Amount = 1000, Tags = new List<string> { "Monthly", "Rent" }, Notes = "Apartment rent" },
+            new() { Date = DateTime.Now.AddDays(-10), Description = "Loan Payment", Type = "Debt", Amount = 2000, Tags = new List<string> { "Debt", "Loan" }, Notes = "Cleared debt for bank loan" }
+        };
+    }
+
+    private void SortByColumn(string column)
+    {
+        if (SortColumn == column)
+        {
+            IsAscending = !IsAscending;
+        }
+        else
+        {
+            SortColumn = column;
+            IsAscending = true;
+        }
+    }
+
+    private class TransactionItem
+    {
+        public DateTime Date { get; set; }
+        public string Description { get; set; }
+        public string Type { get; set; }
+        public decimal Amount { get; set; }
+        public List<string> Tags { get; set; } = new();
+        public string Notes { get; set; }
+    }
+}

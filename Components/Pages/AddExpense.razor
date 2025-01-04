@@ -1,0 +1,57 @@
+﻿<div class="modal fade" id="addExpenseModal" tabindex="-1" aria-labelledby="addExpenseLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addExpenseLabel">Record New Expense</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form @onsubmit="HandleSubmit">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="title" @bind="Expense.Title" placeholder="Expense Title" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Amount</label>
+                        <input type="number" class="form-control" id="amount" @bind="Expense.Amount" placeholder="$ 0.00" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="date" @bind="Expense.Date" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <input type="text" class="form-control" id="notes" @bind="Expense.Notes" placeholder="Food & Dining" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="tags" class="form-label">Tags</label>
+                        <input type="text" class="form-control" id="tags" @bind="Expense.Tags" placeholder="Add tags (comma separated)" />
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-dark">Save Expense</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ExpenseModel Expense { get; set; } = new();
+
+    private void HandleSubmit()
+    {
+        // Add logic to save the expense
+        Console.WriteLine($"Saved Expense: {Expense.Title}, {Expense.Amount}, {Expense.Date}, {Expense.Notes}, {Expense.Tags}");
+        // Optionally close the modal here
+    }
+
+    private class ExpenseModel
+    {
+        public string Title { get; set; } = string.Empty;  // New Title field
+        public decimal Amount { get; set; }
+        public DateTime Date { get; set; }
+        public string Notes { get; set; } = string.Empty;
+        public string Tags { get; set; } = string.Empty;
+    }
+}

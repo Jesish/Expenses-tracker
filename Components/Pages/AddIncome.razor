@@ -1,0 +1,58 @@
+﻿<!-- Income Modal -->
+<div class="modal fade" id="addIncomeModal" tabindex="-1" aria-labelledby="addIncomeLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addIncomeLabel">Record New Income</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form @onsubmit="HandleIncomeSubmit">
+                    <div class="mb-3">
+                        <label for="incomeTitle" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="incomeTitle" @bind="Income.Title" placeholder="Income Title" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="incomeAmount" class="form-label">Amount</label>
+                        <input type="number" class="form-control" id="incomeAmount" @bind="Income.Amount" placeholder="$ 0.00" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="incomeDate" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="incomeDate" @bind="Income.Date" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="incomeNotes" class="form-label">Notes</label>
+                        <input type="text" class="form-control" id="incomeNotes" @bind="Income.Notes" placeholder="Salary, Business Income" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="incomeTags" class="form-label">Tags</label>
+                        <input type="text" class="form-control" id="incomeTags" @bind="Income.Tags" placeholder="Add tags (comma separated)" />
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-dark">Save Income</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private IncomeModel Income { get; set; } = new();
+
+    private void HandleIncomeSubmit()
+    {
+        // Add logic to save the income
+        Console.WriteLine($"Saved Income: {Income.Title}, {Income.Amount}, {Income.Date}, {Income.Notes}, {Income.Tags}");
+        // Optionally close the modal here
+    }
+
+    private class IncomeModel
+    {
+        public string Title { get; set; } = string.Empty;
+        public decimal Amount { get; set; }
+        public DateTime Date { get; set; }
+        public string Notes { get; set; } = string.Empty;
+        public string Tags { get; set; } = string.Empty;
+    }
+}

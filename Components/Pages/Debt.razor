@@ -1,0 +1,173 @@
+﻿@page "/debt"
+
+<div class="container mt-4">
+    <!-- Record Debt Form Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4 class="mb-4">Record Debt</h4>
+
+            <div class="row g-3">
+                <!-- Amount -->
+                <div class="col-md-6">
+                    <label class="form-label">Amount</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number"
+                               class="form-control"
+                               placeholder="0.00"
+                               step="0.01"
+                               @bind="Amount" />
+                    </div>
+                </div>
+
+                <!-- Due Date -->
+                <div class="col-md-6">
+                    <label class="form-label">Due date</label>
+                    <input type="date"
+                           class="form-control"
+                           @bind="DueDate" />
+                </div>
+
+                <!-- Notes -->
+                <div class="col-md-6">
+                    <label class="form-label">Notes</label>
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Food & Dining"
+                           @bind="Notes" />
+                </div>
+
+                <!-- Source of debt -->
+                <div class="col-md-6">
+                    <label class="form-label">Source of debt</label>
+                    <input type="text"
+                           class="form-control"
+                           @bind="SourceOfDebt" />
+                </div>
+
+                <!-- Tags -->
+                <div class="col-12">
+                    <label class="form-label">Tags</label>
+                    <input type="text"
+                           class="form-control"
+                           placeholder="Add tags (comma separated)"
+                           @bind="Tags" />
+                </div>
+
+                <!-- Add Debt Button -->
+                <div class="col-12">
+                    <button class="btn btn-dark w-100" @onclick="AddDebt">
+                        Add Debt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debts Table -->
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Source of Debt</th>
+                    <th>Taken Date</th>
+                    <th>Due date</th>
+                    <th>Tag</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var debt in Debts)
+                {
+                        <tr>
+                            <td>@debt.Source</td>
+                            <td>@debt.TakenDate.ToString("dd MMM yyyy")</td>
+                            <td>@debt.DueDate.ToString("dd MMM yyyy")</td>
+                            <td>
+                            @foreach (var tag in debt.Tags)
+                            {
+                                        <span class="badge bg-primary me-1">@tag</span>
+                            }
+                            </td>
+                            <td>$@debt.Amount.ToString("F2")</td>
+                            <td>@debt.Status</td>
+                        </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private decimal Amount { get; set; }
+    private DateTime DueDate { get; set; } = DateTime.Today;
+    private string Notes { get; set; }
+    private string SourceOfDebt { get; set; }
+    private string Tags { get; set; }
+
+    // Dummy data for demonstration
+    private List<DebtItem> Debts { get; set; } = new()
+    {
+        new DebtItem
+        {
+            Source = "Sankrina Kharka",
+            TakenDate = new DateTime(2025, 1, 15),
+            DueDate = new DateTime(2025, 2, 20),
+            Tags = new[] { "birthday" },
+            Amount = 150.00m,
+            Status = "Paid"
+        }
+    };
+
+    private class DebtItem
+    {
+        public string Source { get; set; }
+        public DateTime TakenDate { get; set; }
+        public DateTime DueDate { get; set; }
+        public string[] Tags { get; set; }
+        public decimal Amount { get; set; }
+        public string Status { get; set; }
+    }
+
+    private void AddDebt()
+    {
+        var newDebt = new DebtItem
+            {
+                Source = SourceOfDebt,
+                TakenDate = DateTime.Today,
+                DueDate = DueDate,
+                Tags = Tags?.Split(',').Select(t => t.Trim()).ToArray() ?? Array.Empty<string>(),
+                Amount = Amount,
+                Status = "Pending"
+            };
+
+        Debts.Add(newDebt);
+
+        // Clear form
+        Amount = 0;
+        DueDate = DateTime.Today;
+        Notes = string.Empty;
+        SourceOfDebt = string.Empty;
+        Tags = string.Empty;
+    }
+}
+
+<style>
+    .form-control:focus {
+        box-shadow: none;
+        border-color: #ced4da;
+    }
+
+    .btn-dark {
+        background-color: #0f172a;
+    }
+
+    .btn-dark:hover {
+        background-color: #1e293b;
+    }
+
+    .badge {
+        font-weight: normal;
+    }
+</style>
