@@ -1,4 +1,8 @@
 ﻿<!-- Income Modal -->
+@using Expenses_tracker.Services
+@inject Expenses_tracker.Services.AuthServices Transactions
+@inject NavigationManager NavigationManager
+
 <div class="modal fade" id="addIncomeModal" tabindex="-1" aria-labelledby="addIncomeLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -7,27 +11,36 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form @onsubmit="HandleIncomeSubmit">
+                @if (!string.IsNullOrEmpty(Message)){
+                    <div class="alert alert-info mb-3" role="alert">
+                        @Message
+                    </div>
+                }
+                <form @onsubmit="HandleSubmit">
                     <div class="mb-3">
                         <label for="incomeTitle" class="form-label">Title</label>
-                        <input type="text" class="form-control" id="incomeTitle" @bind="Income.Title" placeholder="Income Title" />
+                        <input type="text" class="form-control" id="incomeTitle" @bind="Title" placeholder="Income Title" />
                     </div>
                     <div class="mb-3">
                         <label for="incomeAmount" class="form-label">Amount</label>
-                        <input type="number" class="form-control" id="incomeAmount" @bind="Income.Amount" placeholder="$ 0.00" />
+                        <input type="number" class="form-control" id="incomeAmount" @bind="Amount" placeholder="$ 0.00" />
                     </div>
-                    <div class="mb-3">
-                        <label for="incomeDate" class="form-label">Date</label>
-                        <input type="date" class="form-control" id="incomeDate" @bind="Income.Date" />
-                    </div>
+
                     <div class="mb-3">
                         <label for="incomeNotes" class="form-label">Notes</label>
-                        <input type="text" class="form-control" id="incomeNotes" @bind="Income.Notes" placeholder="Salary, Business Income" />
+                        <input type="text" class="form-control" id="incomeNotes" @bind="Notes" placeholder="Salary, Business Income" />
                     </div>
                     <div class="mb-3">
                         <label for="incomeTags" class="form-label">Tags</label>
-                        <input type="text" class="form-control" id="incomeTags" @bind="Income.Tags" placeholder="Add tags (comma separated)" />
+                        <input type="text" class="form-control" id="incomeTags" @bind="Tags" placeholder="Add tags (comma separated)" />
                     </div>
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="alert-danger alert-info mb-3" role="alert">
+                            @ErrorMessage
+                        </div>
+                    }
+                    
                     <div class="d-grid">
                         <button type="submit" class="btn btn-dark">Save Income</button>
                     </div>
@@ -37,22 +50,63 @@
     </div>
 </div>
 
-@code {
-    private IncomeModel Income { get; set; } = new();
 
-    private void HandleIncomeSubmit()
+
+@code {
+
+    private string Title;
+    private decimal Amount;
+    private string Notes;
+    private string Tags;
+    private string Message; 
+    private string ErrorMessage;
+
+    public Func<string ,string, decimal, string, string, bool, Task<bool>> Transaction;
+
+    protected override void OnInitialized()
     {
-        // Add logic to save the income
-        Console.WriteLine($"Saved Income: {Income.Title}, {Income.Amount}, {Income.Date}, {Income.Notes}, {Income.Tags}");
-        // Optionally close the modal here
+        Transaction = Transactions.AddTransaction;
     }
 
-    private class IncomeModel
+    private async Task HandleSubmit()
     {
-        public string Title { get; set; } = string.Empty;
-        public decimal Amount { get; set; }
-        public DateTime Date { get; set; }
-        public string Notes { get; set; } = string.Empty;
-        public string Tags { get; set; } = string.Empty;
+        try
+        {
+            // Reset messages
+            Message = null;
+            ErrorMessage = null;
+
+            // Validate input fields
+            if (string.IsNullOrEmpty(Title) || Amount <= 0)
+            {
+                ErrorMessage = "Please fill out all required fields correctly.";
+                return;
+            }
+
+            // Add transaction
+            var result = await Task.Run(() =>
+                Transaction(StaticValue.UserId,Title, Amount, Notes, Tags, true)
+            );
+
+            // Reset fields after success
+            Title = string.Empty;
+            Amount = 0;
+            Notes = string.Empty;
+            Tags = string.Empty;
+
+            // Display success message
+            Message = "Transaction successfully added!";
+
+            NavigationManager.NavigateTo("/transactions");
+            // Optionally, close the modal
+            
+        }
+        catch (Exception ex)
+        {
+            // Handle and display the error message
+            ErrorMessage = $"Error: {ex.Message}";
+            // Optionally, display a user-friendly message on the UI
+        }
     }
 }
+

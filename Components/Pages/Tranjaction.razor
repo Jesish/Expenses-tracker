@@ -1,4 +1,6 @@
 ﻿@page "/transactions"
+@using Expenses_tracker.Services
+@using Expenses_tracker.Models
 
 <div class="container mt-4">
     <!-- Add Income and Expense Buttons -->
@@ -11,11 +13,7 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
         <div class="d-flex flex-wrap">
             <!-- Search Box -->
-            <input type="text"
-                   class="form-control me-2 mb-2"
-                   placeholder="Search by title, tags, or notes"
-                   @bind="SearchTerm"
-                   style="min-width: 250px;" />
+            <input type="text" class="form-control me-2 mb-2" placeholder="Search by title, tags, or notes" @bind="SearchTerm" style="min-width: 250px;" />
 
             <!-- Transaction Type Filter -->
             <select class="form-select me-2 mb-2" @bind="SelectedType" style="min-width: 150px;">
@@ -27,15 +25,9 @@
 
             <!-- Date Range Filter -->
             <div class="d-flex align-items-center mb-2">
-                <input type="date"
-                       class="form-control me-2"
-                       @bind="StartDate"
-                       style="min-width: 150px;" />
+                <input type="date" class="form-control me-2" @bind="StartDate" style="min-width: 150px;" />
                 <span class="me-2">to</span>
-                <input type="date"
-                       class="form-control"
-                       @bind="EndDate"
-                       style="min-width: 150px;" />
+                <input type="date" class="form-control" @bind="EndDate" style="min-width: 150px;" />
             </div>
         </div>
     </div>
@@ -45,11 +37,11 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th @onclick="() => SortByColumn(nameof(TransactionItem.Date))">Date</th>
-                    <th @onclick="() => SortByColumn(nameof(TransactionItem.Description))">Title</th>
-                    <th @onclick="() => SortByColumn(nameof(TransactionItem.Type))">Type</th>
-                    <th @onclick="() => SortByColumn(nameof(TransactionItem.Amount))">Amount</th>
-                    <th @onclick="() => SortByColumn(nameof(TransactionItem.Tags))">Tags</th>
+                    <th @onclick="() => SortByColumn(nameof(Transactions.Date))">Date</th>
+                    <th @onclick="() => SortByColumn(nameof(Transactions.Title))">Title</th>
+                    <th @onclick="() => SortByColumn(nameof(Transactions.Type))">Type</th>
+                    <th @onclick="() => SortByColumn(nameof(Transactions.Amount))">Amount</th>
+                    <th @onclick="() => SortByColumn(nameof(Transactions.Tags))">Tags</th>
                     <th>Notes</th>
                 </tr>
             </thead>
@@ -57,11 +49,11 @@
                 @foreach (var transaction in FilteredTransactions)
                 {
                     <tr>
-                        <td>@transaction.Date.ToString("MMM dd, yyyy")</td>
-                        <td>@transaction.Description</td>
+                        <td>@(DateTime.TryParse(transaction.Date, out var parsedDate) ? parsedDate.ToString("MMM dd, yyyy") : "Invalid Date")</td>
+                        <td>@transaction.Title</td>
                         <td>@transaction.Type</td>
                         <td>@transaction.Amount</td>
-                        <td>@string.Join(", ", transaction.Tags)</td>
+                        <td>@transaction.Tags</td>
                         <td>@transaction.Notes</td>
                     </tr>
                 }
@@ -81,39 +73,28 @@
     private string SelectedType { get; set; } = "";
     private DateTime? StartDate { get; set; }
     private DateTime? EndDate { get; set; }
-    private string SortColumn { get; set; } = "";
+    private string SortColumn { get; set; } = nameof(Transactions.Date);
     private bool IsAscending { get; set; } = true;
 
-    private List<TransactionItem> Transactions { get; set; } = new();
-    private List<TransactionItem> FilteredTransactions => Transactions
+    private List<Transactions> TransactionsModel { get; set; } = new();
+    private List<Transactions> FilteredTransactions => TransactionsModel
         .Where(t =>
             (string.IsNullOrEmpty(SearchTerm) ||
-             t.Description.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-             t.Tags.Any(tag => tag.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)) ||
-             t.Notes.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)) &&
+             (t.Title?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+             (t.Tags?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false) ||
+             (t.Notes?.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ?? false)) &&
             (string.IsNullOrEmpty(SelectedType) || t.Type == SelectedType) &&
-            (!StartDate.HasValue || t.Date >= StartDate) &&
-            (!EndDate.HasValue || t.Date <= EndDate))
-        .OrderBy(t => SortColumn == nameof(TransactionItem.Date) && IsAscending ? t.Date : DateTime.MinValue)
-        .ThenByDescending(t => SortColumn == nameof(TransactionItem.Date) && !IsAscending ? t.Date : DateTime.MinValue)
-        .ThenBy(t => SortColumn == nameof(TransactionItem.Description) && IsAscending ? t.Description : "")
-        .ThenByDescending(t => SortColumn == nameof(TransactionItem.Description) && !IsAscending ? t.Description : "")
-        .ThenBy(t => SortColumn == nameof(TransactionItem.Type) && IsAscending ? t.Type : "")
-        .ThenByDescending(t => SortColumn == nameof(TransactionItem.Type) && !IsAscending ? t.Type : "")
-        .ThenBy(t => SortColumn == nameof(TransactionItem.Amount) && IsAscending ? t.Amount : decimal.MinValue)
-        .ThenByDescending(t => SortColumn == nameof(TransactionItem.Amount) && !IsAscending ? t.Amount : decimal.MinValue)
-        .ToList();
-
-    protected override void OnInitialized()
-    {
-        // Sample Data
-        Transactions = new List<TransactionItem>
+            (!StartDate.HasValue || DateTime.TryParse(t.Date, out var startDate) && startDate >= StartDate) &&
+            (!EndDate.HasValue || DateTime.TryParse(t.Date, out var endDate) && endDate <= EndDate))
+        .OrderBy(t => SortColumn switch
         {
-            new() { Date = DateTime.Now, Description = "Salary", Type = "Income", Amount = 5000, Tags = new List<string> { "Monthly", "Salary" }, Notes = "Paid by employer" },
-            new() { Date = DateTime.Now.AddDays(-5), Description = "Rent", Type = "Expense", Amount = 1000, Tags = new List<string> { "Monthly", "Rent" }, Notes = "Apartment rent" },
-            new() { Date = DateTime.Now.AddDays(-10), Description = "Loan Payment", Type = "Debt", Amount = 2000, Tags = new List<string> { "Debt", "Loan" }, Notes = "Cleared debt for bank loan" }
-        };
-    }
+            nameof(Transactions.Date) => DateTime.TryParse(t.Date, out var date) ? date : DateTime.MinValue,
+            nameof(Transactions.Title) => t.Title,
+            nameof(Transactions.Type) => t.Type,
+            nameof(Transactions.Amount) => t.Amount,
+            _ => null
+        }, IsAscending ? Comparer<object>.Default : Comparer<object>.Create((x, y) => Comparer<object>.Default.Compare(y, x)))
+        .ToList();
 
     private void SortByColumn(string column)
     {
@@ -128,13 +109,35 @@
         }
     }
 
-    private class TransactionItem
+    private string ErrorMessage;
+
+    protected override async Task OnInitializedAsync()
     {
-        public DateTime Date { get; set; }
-        public string Description { get; set; }
-        public string Type { get; set; }
-        public decimal Amount { get; set; }
-        public List<string> Tags { get; set; } = new();
-        public string Notes { get; set; }
+        await FetchTransactions();
     }
+
+    private async Task FetchTransactions()
+    {
+        try
+        {
+            string userId = StaticValue.UserId;
+            var users = await AuthServices.ReadUsersFromFile();
+
+            var user = users.FirstOrDefault(u => u.Id == userId);
+
+            if (user == null)
+            {
+                ErrorMessage = "User not found.";
+                return;
+            }
+
+            TransactionsModel = user.Transactions;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error fetching transactions: {ex.Message}";
+        }
+    }
+
+    
 }

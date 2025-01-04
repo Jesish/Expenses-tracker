@@ -6,25 +6,17 @@ using System.Threading.Tasks;
 
 namespace Expenses_tracker.Models
 {
-    internal class Transactions
-
+    public class DebtModels
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
-        public string Title { get; set; }
         public string Notes { get; set; }
         public string Tags { get; set; }
-
         public decimal Amount { get; set; }
-        public DateTime Date { get; set; }
-        public TransactionType Type { get; set; }
+        public string Source { get; set; }
+        public DateOnly DueDate { get; set; }
+        public bool IsPaid { get; set; }
 
 
-        public enum TransactionType
-        {
-            Income,
-            Expense,
-            Debt
-        }
     }
     
 }
