@@ -4,10 +4,34 @@
 
 <div class="container mt-4">
     <!-- Add Income and Expense Buttons -->
-    <div class="d-flex justify-content-end mb-3">
-        <button class="btn btn-outline-dark me-2" type="button" data-bs-toggle="modal" data-bs-target="#addIncomeModal">+ Add Income</button>
-        <button class="btn btn-dark" type="button" data-bs-toggle="modal" data-bs-target="#addExpenseModal">+ Add Expense</button>
+    <div class="row g-4">
+        <!-- Button Section -->
+        <div class="col-12">
+            <div class="d-flex justify-content-end mb-4">
+                <button class="btn btn-outline-dark me-2" type="button" data-bs-toggle="modal" data-bs-target="#addIncomeModal">+ Add Income</button>
+                <button class="btn btn-dark" type="button" data-bs-toggle="modal" data-bs-target="#addExpenseModal">+ Add Expense</button>
+            </div>
+        </div>
+
+        <!-- Card Section -->
+        <div class="row-cols-4 pt-4">
+            <div class="overview-card">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Total No of Transactions</span>
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <h3 class="mb-0">@TotalNumberofTransactions</h3>
+            </div>
+            <div class="overview-card">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-muted">Total No of Transactions</span>
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <h3 class="mb-0">@TotalTransactions</h3>
+            </div>
+        </div>
     </div>
+
 
     <!-- Search and Filter Section -->
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
@@ -116,6 +140,13 @@
         await FetchTransactions();
     }
 
+    private int TotalNumberofTransactions { get; set; } = 0;
+    private int TotalTransactions { get; set; } = 0;
+    private decimal TotalInflows { get; set; } = 0;
+    private decimal TotalDebts { get; set; } = 0;
+    private decimal TotalOutflows { get; set; } = 0;
+
+
     private async Task FetchTransactions()
     {
         try
@@ -131,13 +162,34 @@
                 return;
             }
 
+            // Fetch the transactions
             TransactionsModel = user.Transactions;
+
+            TotalInflows = TransactionsModel
+            .Where(t => t.Type.Equals("Income", StringComparison.OrdinalIgnoreCase))
+            .Sum(t => t.Amount);
+
+            TotalDebts = TransactionsModel
+                .Where(t => t.Type.Equals("Debt", StringComparison.OrdinalIgnoreCase))
+                .Sum(t => t.Amount);
+
+            TotalOutflows = TransactionsModel
+                .Where(t => t.Type.Equals("Expense", StringComparison.OrdinalIgnoreCase))
+                .Sum(t => t.Amount);
+
+            // Calculate total transactions
+            TotalNumberofTransactions = (int)(TotalInflows + TotalDebts - TotalOutflows);
+
+
+            // Calculate the total number of transactions
+            TotalTransactions = TransactionsModel?.Count ?? 0;
         }
         catch (Exception ex)
         {
             ErrorMessage = $"Error fetching transactions: {ex.Message}";
         }
     }
+
 
     
 }

@@ -80,7 +80,7 @@
                 return;
             }
 
-            if (StaticValue.TotalBalance <= 0)
+            if (StaticValue.TotalBalance <= 0 && StaticValue.TotalBalance<Amount)
             {
                 ErrorMessage = $"Insufficient Income or Balance. Current Balance: {StaticValue.TotalBalance}";
                 return;
@@ -91,7 +91,7 @@
             var result = await Task.Run(() =>
                 Transaction(StaticValue.UserId, Title, Amount, Notes, Tags, false)
             );
-
+            
             // Reset fields after success
             Title = string.Empty;
             Amount = 0;

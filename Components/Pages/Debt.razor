@@ -108,6 +108,19 @@
                             <td>@debt.Amount.ToString("F2")</td>
                             <td>@debt.DueDate</td>
                             <td>@(debt.IsPaid ? "Paid" : "Unpaid")</td>
+                            <td></td>
+                            @if (!debt.IsPaid)
+                            {
+                                <button class="btn btn-primary" @onclick="() => TogglePaymentStatus(debt.Id)">
+                                    Mark as Paid
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-secondary" disabled>
+                                    Paid
+                                </button>
+                            }
                         </tr>
                     }
                 }
@@ -132,6 +145,8 @@
     {
         Debts = Transactions.AddDebt;
     }
+
+    
 
     private async Task HandleSubmit()
     {
@@ -201,6 +216,36 @@
             ErrorMessage = $"Error fetching debts: {ex.Message}";
         }
     }
+    private async Task TogglePaymentStatus(string debtId)
+    {
+        try
+        {
+            // Find the debt by ID
+            var debt = DebtModel.FirstOrDefault(d => d.Id == debtId);
+            if (debt == null)
+            {
+                ErrorMessage = "Debt not found.";
+                return;
+            }
+
+            // Update the payment status
+            debt.IsPaid = true;
+
+            // Optionally update the data source (e.g., file, database)
+            await Transactions.UpdateUserDebt(StaticValue.UserId, debt);
+
+
+            // Refresh the debts list
+            await FetchDebts();
+
+            Message = "Payment status updated successfully.";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error updating payment status: {ex.Message}";
+        }
+    }
+
 
 }
 

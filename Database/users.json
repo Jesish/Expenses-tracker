@@ -4,7 +4,7 @@
     "Username": "charitra shrestha",
     "Password": "KA\u002BZetmoMqgx0XHh6oWLl5z9xNmIMAy6QzaRYoLD\u002BEc=",
     "type": "NRP",
-    "TotalBalance": 49490,
+    "TotalBalance": 49190,
     "Transactions": [
       {
         "Id": "0398fc57-e548-4598-bf02-105c0435db86",
@@ -96,7 +96,7 @@
         "Amount": 500,
         "Source": "jesish",
         "DueDate": "2025-01-01",
-        "IsPaid": false
+        "IsPaid": true
       }
     ]
   },

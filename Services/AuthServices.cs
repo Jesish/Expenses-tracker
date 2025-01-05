@@ -99,7 +99,7 @@ namespace Expenses_tracker.Services
                 return false; // User not found
             }
             StaticValue.UserId = user.Id;
-            StaticValue.TotalBalance = user.TotalBalance;
+            //StaticValue.TotalBalance = user.TotalBalance;
 
             // Validate password
             return ValidatePassword(password, user.Password);
@@ -175,6 +175,30 @@ namespace Expenses_tracker.Services
 
             var json = await File.ReadAllTextAsync(FilePath);
             return JsonSerializer.Deserialize<List<User>>(json) ?? new List<User>();
+        }
+        public async Task UpdateUserDebt(string userId, DebtModels updatedDebt)
+        {
+            var users = await ReadUsersFromFile();
+            var user = users.FirstOrDefault(u => u.Id == userId);
+
+            if (user != null)
+            {
+                var debt = user.Debts.FirstOrDefault(d => d.Id == updatedDebt.Id);
+                if (debt != null)
+                {
+                    if (!debt.IsPaid && updatedDebt.IsPaid)
+                    {
+                        // Deduct the debt amount from the user's total balance
+                        user.TotalBalance -= debt.Amount;
+                    }
+
+                    // Update the debt
+                    debt.IsPaid = updatedDebt.IsPaid;
+
+                    // Save changes to file or database
+                    await WriteUsersToFile(users);
+                }
+            }
         }
 
 
