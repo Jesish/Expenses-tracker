@@ -2,11 +2,39 @@
  @using Expenses_tracker.Services
  @using Expenses_tracker.Models
  @using Newtonsoft.Json
+ @inject NavigationManager NavigationManager
 
 <div class="dashboard-container"> 
     <!-- financial overview section --> 
-    <section class="mb-4"> 
-        <h2 class="mb-4">financial overview</h2> 
+    <section class="mb-4">
+        <div class="row g-2">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-4">Financial Overview</h2>
+                <div class="dropdown">
+                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        Filter
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" @onclick='() => SetFilterType("All")'>All</a></li>
+                        <li><a class="dropdown-item" @onclick='() => SetFilterType("Calendar")'>Select Date Range</a></li>
+                    </ul>
+                </div>
+            </div>
+            @if (FilterSelection == "Calendar")
+            {
+                <div class="mb-3">
+                    <label for="startDate">Start Date:</label>
+                    <InputDate id="startDate" @bind-Value="StartDate" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label for="endDate">End Date:</label>
+                    <InputDate id="endDate" @bind-Value="EndDate" class="form-control" />
+                </div>
+                <button class="btn btn-primary" @onclick="async () => await ApplyFilter()">Apply Filter</button>
+
+            }
+        </div>
         <div class="row g-4"> 
             <div class="col-md-3"> 
                 <div class="overview-card"> 
@@ -14,7 +42,7 @@
                         <span class="text-muted">Total Balance</span> 
                         <i class="bi bi-wallet2"></i> 
                     </div> 
-                    <h3 class="mb-0">$@TotalBalance</h3>
+                    <h3 class="mb-0">@Symbol @TotalBalance</h3>
                 </div> 
             </div> 
             <div class="col-md-3"> 
@@ -23,8 +51,8 @@
                         <span class="text-muted">Total Income</span> 
                         <i class="bi bi-star"></i> 
                     </div> 
-                    <h3 class="mb-0">$@income</h3> 
-                    <small class="text-muted">month to date</small> 
+                    <h3 class="mb-0">@Symbol @income</h3>
+
                 </div> 
             </div> 
             <div class="col-md-3"> 
@@ -33,8 +61,8 @@
                         <span class="text-muted">Total Expenses</span> 
                         <i class="bi bi-graph-down"></i> 
                     </div> 
-                    <h3 class="mb-0">$@Expense</h3> 
-                    <small class="text-muted">month to date</small> 
+                    <h3 class="mb-0">@Symbol @Expense</h3>
+
                 </div> 
             </div> 
             <div class="col-md-3"> 
@@ -43,8 +71,7 @@
                         <span class="text-muted">Total Debt</span> 
                         <i class="bi bi-credit-card"></i> 
                     </div> 
-                    <h3 class="mb-0">$@Debt</h3> 
-                    <small class="text-muted">3 pending payments</small> 
+                    <h3 class="mb-0">@Symbol @Debt</h3>
                 </div> 
             </div> 
         </div> 
@@ -53,17 +80,8 @@
     <!-- pending debts section --> 
     <section class="mb-4"> 
         <div class="d-flex justify-content-between align-items-center mb-3"> 
-            <h3>Pending Debts</h3> 
-            <div class="dropdown"> 
-                <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"> 
-                    filter 
-                </button> 
-                <ul class="dropdown-menu"> 
-                    <li><a class="dropdown-item" href="#">all</a></li> 
-                    <li><a class="dropdown-item" href="#">this month</a></li> 
-                    <li><a class="dropdown-item" href="#">last month</a></li> 
-                </ul> 
-            </div> 
+            <h3>Pending Debts (@No_of_pending_debts)</h3>
+
         </div> 
 
 
@@ -84,7 +102,7 @@
                             <tr>
                                 <td>@debt.Notes</td>
                                 <td class="text-muted">@debt.DueDate</td>
-                                <td class="text-end">$@debt.Amount</td>
+                                <td class="text-end">@Symbol @debt.Amount</td>
                             </tr>
                         }
                     }
@@ -103,20 +121,15 @@
     <!-- recent transactions section --> 
     <section> 
         <div class="d-flex justify-content-between align-items-center mb-3"> 
-            <h3>Recent Transactions</h3> 
-            <div class="d-flex gap-3"> 
-                <input type="search" class="form-control" placeholder="search..."> 
-                <div class="dropdown"> 
-                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown"> 
-                        filter 
-                    </button> 
-                    <ul class="dropdown-menu"> 
-                        <li><a class="dropdown-item" href="#">all</a></li> 
-                        <li><a class="dropdown-item" href="#">income</a></li> 
-                        <li><a class="dropdown-item" href="#">expense</a></li> 
-                    </ul> 
-                </div> 
-            </div> 
+            @if (FilterSelection == "Transaction")
+            {
+                <h3>All Transactions</h3>
+            }
+            else
+            {
+                <h3>Recent Transactions</h3>
+            }
+           
         </div> 
 
 
@@ -138,7 +151,7 @@
                                 </td>
                                 <td class="text-muted">@transaction.Date</td>
                                 <td class="text-end @(transaction.Type == "Income" ? "text-success" : "text-danger")">
-                                    $@transaction.Amount
+                                    @Symbol @transaction.Amount
                                 </td>
                             </tr>
                         }
@@ -160,9 +173,14 @@
     private decimal income = 0;
     private decimal Expense = 0;
     private decimal Debt = 0;
+    private string Symbol = "";
     private decimal TotalBalance = 0;
-
-    public string FilePath = "C:\\Users\\sthar\\OneDrive\\Desktop\\Expenses-tracker\\Database\\users.json";
+    private string FilterSelection { get; set; } = "All";
+    private DateOnly StartDate { get; set; }
+    private DateOnly EndDate { get; set; }
+    public static List<DebtModels> Debts { get; private set; } = new();
+    public static int No_of_pending_debts = 0;
+    public static List<Transactions> TransactionsData { get; private set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -171,18 +189,19 @@
         Debt = await FetchTotalDebt();
         TotalBalance = await FetchTotalBalance();
         StaticValue.TotalBalance = TotalBalance;
-        await FetchUnPaidDebt(FilePath);
-        await FetchLimitedTransactions(FilePath);
+        Symbol = StaticValue.CurrencySymbol;
+        await FetchUnPaidDebt(StaticValue.filePath);
+        await FetchLimitedTransactions(StaticValue.filePath);
 
     }
     public async Task<decimal> FetchTotalIncome()
     {
-        if (!File.Exists(FilePath))
+        if (!File.Exists(StaticValue.filePath))
         {
-            throw new FileNotFoundException("The specified JSON file was not found.", FilePath);
+            throw new FileNotFoundException("The specified JSON file was not found.", StaticValue.filePath);
         }
 
-        string jsonData = await File.ReadAllTextAsync(FilePath);
+        string jsonData = await File.ReadAllTextAsync(StaticValue.filePath);
         var users = JsonConvert.DeserializeObject<List<User>>(jsonData);
 
         // Find the specific user by UserId
@@ -199,14 +218,74 @@
                    .Sum(transaction => transaction.Amount);
     }
 
-    public async Task<decimal> FetchTotalExpense()
+    private void SetFilterType(string filterType)
     {
-        if (!File.Exists(FilePath))
+        FilterSelection = filterType;
+        if (filterType == "All")
         {
-            throw new FileNotFoundException("The specified JSON file was not found.", FilePath);
+            ReloadPage();
+        }
+    }
+    public string ErrorMessage;
+
+    private async Task ApplyFilter()
+    {
+        if (StartDate == null || EndDate == null)
+        {
+            ErrorMessage = "Please select both start and end dates.";
+            return;
         }
 
-        string jsonData = await File.ReadAllTextAsync(FilePath);
+        // Fetch and filter user data
+        string jsonData = await File.ReadAllTextAsync(StaticValue.filePath);
+        var users = JsonConvert.DeserializeObject<List<User>>(jsonData);
+        var user = users?.FirstOrDefault(u => u.Id == StaticValue.UserId);
+
+        if (user != null)
+        {
+            // Filter transactions
+            TransactionsData = user.Transactions
+             .Where(t => DateOnly.TryParse(t.Date, out var transactionDate) 
+                         && transactionDate >= StartDate             
+                         && transactionDate <= EndDate)             
+             .OrderByDescending(t => DateTime.Parse(t.Date))               
+             .ToList();
+
+            // Recalculate totals
+            income = TransactionsData
+                .Where(t => t.Type.Equals("Income", StringComparison.OrdinalIgnoreCase))
+                .Sum(t => t.Amount);
+
+            Expense = TransactionsData
+                .Where(t => t.Type.Equals("Expense", StringComparison.OrdinalIgnoreCase))
+                .Sum(t => t.Amount);
+
+            TotalBalance = income - Expense;
+
+            ErrorMessage = string.Empty;
+            FilterSelection = "Transaction"; // Clear error message if successful
+        }
+        else
+        {
+            ErrorMessage = "User data not found.";
+        }
+    }
+
+
+    private void ReloadPage()
+    {
+        // Navigate to the current URL to reload the page
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+
+    public async Task<decimal> FetchTotalExpense()
+    {
+        if (!File.Exists(StaticValue.filePath))
+        {
+            throw new FileNotFoundException("The specified JSON file was not found.", StaticValue.filePath);
+        }
+
+        string jsonData = await File.ReadAllTextAsync(StaticValue.filePath);
         var users = JsonConvert.DeserializeObject<List<User>>(jsonData);
 
         var user = users.FirstOrDefault(u => u.Id == StaticValue.UserId);
@@ -220,15 +299,15 @@
                    .Where(transaction => transaction.Type.Equals("Expense", StringComparison.OrdinalIgnoreCase))
                    .Sum(transaction => transaction.Amount);
     }
-
+    //functions to get total debts
     public async Task<decimal> FetchTotalDebt()
     {
-        if (!File.Exists(FilePath))
+        if (!File.Exists(StaticValue.filePath))
         {
-            throw new FileNotFoundException("The specified JSON file was not found.", FilePath);
+            throw new FileNotFoundException("The specified JSON file was not found.", StaticValue.filePath);
         }
 
-        string jsonData = await File.ReadAllTextAsync(FilePath);
+        string jsonData = await File.ReadAllTextAsync(StaticValue.filePath);
         var users = JsonConvert.DeserializeObject<List<User>>(jsonData);
 
         var user = users.FirstOrDefault(u => u.Id == StaticValue.UserId);
@@ -241,14 +320,15 @@
         return user.Debts.Sum(debt => debt.Amount);
     }
 
+    //functions to get total balance
     public async Task<decimal> FetchTotalBalance()
     {
-        if (!File.Exists(FilePath))
+        if (!File.Exists(StaticValue.filePath))
         {
-            throw new FileNotFoundException("The specified JSON file was not found.", FilePath);
+            throw new FileNotFoundException("The specified JSON file was not found.", StaticValue.filePath);
         }
 
-        string jsonData = await File.ReadAllTextAsync(FilePath);
+        string jsonData = await File.ReadAllTextAsync(StaticValue.filePath);
         var users = JsonConvert.DeserializeObject<List<User>>(jsonData);
 
         var user = users.FirstOrDefault(u => u.Id == StaticValue.UserId);
@@ -261,10 +341,7 @@
         return user.TotalBalance;
     }
 
-
-    public static List<DebtModels> Debts { get; private set; } = new();
-
-
+    //fetch unpaid debts 
     public static async Task FetchUnPaidDebt(string filePath)
     {
         if (!File.Exists(filePath))
@@ -281,6 +358,7 @@
         if (user != null)
         {
             Debts = user.Debts.Where(debt => !debt.IsPaid).ToList();
+            No_of_pending_debts = Debts.Count;
         }
         else
         {
@@ -288,8 +366,8 @@
         }
     }
 
-    public static List<Transactions> TransactionsData { get; private set; } = new();
 
+    //fetch the transactions
     public static async Task FetchLimitedTransactions(string filePath)
     {
         if (!File.Exists(filePath))

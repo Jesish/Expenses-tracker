@@ -4,7 +4,7 @@
     "Username": "charitra shrestha",
     "Password": "KA\u002BZetmoMqgx0XHh6oWLl5z9xNmIMAy6QzaRYoLD\u002BEc=",
     "type": "NRP",
-    "TotalBalance": 49190,
+    "TotalBalance": 11028,
     "Transactions": [
       {
         "Id": "0398fc57-e548-4598-bf02-105c0435db86",
@@ -77,6 +77,51 @@
         "Amount": 2000,
         "Date": "2025-01-05",
         "Type": "Income"
+      },
+      {
+        "Id": "cf7a99a8-16c7-4aa2-ad14-db1bc4eaf3a6",
+        "Title": "salary",
+        "Notes": "Salary",
+        "Tags": "Salary",
+        "Amount": 1000,
+        "Date": "2025-01-15",
+        "Type": "Income"
+      },
+      {
+        "Id": "7c6e231c-48af-48a0-97c8-bb441beb1a27",
+        "Title": "Esewa",
+        "Notes": "food",
+        "Tags": "food",
+        "Amount": 500,
+        "Date": "2025-01-15",
+        "Type": "Expense"
+      },
+      {
+        "Id": "674dd529-2ccd-41f7-b823-67bd8e07a145",
+        "Title": "Esewa",
+        "Notes": "gg",
+        "Tags": "gg",
+        "Amount": 50000,
+        "Date": "2025-01-16",
+        "Type": "Expense"
+      },
+      {
+        "Id": "8515d9d2-e38c-4963-b743-d4b939d44314",
+        "Title": "salary",
+        "Notes": "Salary",
+        "Tags": "Salary",
+        "Amount": 100000,
+        "Date": "2025-01-16",
+        "Type": "Income"
+      },
+      {
+        "Id": "869040b0-c0f3-4fb4-9e75-5c970ec8ced7",
+        "Title": "poli",
+        "Notes": "salary",
+        "Tags": "koio",
+        "Amount": 12000,
+        "Date": "2025-01-17",
+        "Type": "Income"
       }
     ],
     "Debts": [
@@ -87,7 +132,7 @@
         "Amount": 150,
         "Source": "Toilet",
         "DueDate": "0001-01-18",
-        "IsPaid": false
+        "IsPaid": true
       },
       {
         "Id": "576fe301-d732-4aa4-ad9e-ffcde6015425",
@@ -97,6 +142,42 @@
         "Source": "jesish",
         "DueDate": "2025-01-01",
         "IsPaid": true
+      },
+      {
+        "Id": "d46b659a-de8d-4965-9718-b3a2a424508d",
+        "Notes": "Food",
+        "Tags": "Food",
+        "Amount": 500,
+        "Source": "Bank",
+        "DueDate": "2025-01-02",
+        "IsPaid": true
+      },
+      {
+        "Id": "fa0f5ff7-3fbb-4749-bb1b-52d3b8e01140",
+        "Notes": "d3rr",
+        "Tags": "rrr",
+        "Amount": 100000,
+        "Source": null,
+        "DueDate": "0001-01-01",
+        "IsPaid": true
+      },
+      {
+        "Id": "f8624e9a-c04f-4940-9944-fa680bd1446d",
+        "Notes": "sa",
+        "Tags": "sas",
+        "Amount": 12,
+        "Source": "sa",
+        "DueDate": "0001-01-01",
+        "IsPaid": true
+      },
+      {
+        "Id": "e0b1a723-660b-416b-b0e3-525d0141cb30",
+        "Notes": "dsds",
+        "Tags": "dsd",
+        "Amount": 1000000,
+        "Source": "dsds",
+        "DueDate": "0001-01-01",
+        "IsPaid": false
       }
     ]
   },
@@ -123,6 +204,24 @@
     "Username": "doraemon",
     "Password": "WZRHGrsBESr8wYFZ9sx0tPURuZgG2lmzyvWpwXPKz8U=",
     "type": "NRP",
+    "TotalBalance": 0,
+    "Transactions": [],
+    "Debts": []
+  },
+  {
+    "Id": "c8633682-383d-492f-b7e2-bba210575afb",
+    "Username": "sakshi",
+    "Password": "VuXZfLrND5bCaV5KlZx2lJHJs7R7/AbNhvjaP1M2maE=",
+    "type": "USD",
+    "TotalBalance": 0,
+    "Transactions": [],
+    "Debts": []
+  },
+  {
+    "Id": "2052fe83-7224-48f9-87f1-3d157f9d5e10",
+    "Username": "koko",
+    "Password": "3jTd9a9by9oCGacoCICgt8auexKIUWCZb\u002BPv\u002BqZ3M6M=",
+    "type": "EUR",
     "TotalBalance": 0,
     "Transactions": [],
     "Debts": []

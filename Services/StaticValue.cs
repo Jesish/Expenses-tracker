@@ -11,8 +11,9 @@ namespace Expenses_tracker.Services
     {
         public static string UserId;
         public static decimal TotalBalance;
-
-
-
+        public static string CurrencyType;
+        public static string CurrencySymbol;
+        public static string Username;
+        public static string filePath = "C:\\Users\\CHME\\Desktop\\Expenses tracker\\Database\\users.json";
     }
 }

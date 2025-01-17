@@ -1,4 +1,5 @@
 ﻿using Expenses_tracker.Models;
+using Expenses_tracker.Services;
 using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
@@ -15,23 +16,20 @@ namespace Expenses_tracker.Services
 {
     public class AuthServices
     {
-        public const string FilePath = "C:\\Users\\sthar\\OneDrive\\Desktop\\Expenses-tracker\\Database\\users.json";
-        //public const string FilePath = "C:\\Users\\CHME\\Desktop\\Expenses tracker\\Database\\users.json";
-
         // Load users from JSON file
         public List<User> FetchAllUsers()
         {
-            if (!File.Exists(FilePath))
+            if (!File.Exists(StaticValue.filePath))
                 return new List<User>();
 
-            var json = File.ReadAllText(FilePath);
+            var json = File.ReadAllText(StaticValue.filePath);
             return JsonSerializer.Deserialize<List<User>>(json) ?? new List<User>();
         }
 
         public void SaveUsers(List<User> users)
         {
             var json = JsonSerializer.Serialize(users, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(FilePath, json);
+            File.WriteAllText(StaticValue.filePath, json);
         }
 
         // Hash the password using SHA-256
@@ -99,7 +97,8 @@ namespace Expenses_tracker.Services
                 return false; // User not found
             }
             StaticValue.UserId = user.Id;
-            //StaticValue.TotalBalance = user.TotalBalance;
+            StaticValue.Username = user.Username;
+            CurrencyHelper.SetCurrencySymbol(user.type);
 
             // Validate password
             return ValidatePassword(password, user.Password);
@@ -128,6 +127,7 @@ namespace Expenses_tracker.Services
             user.Transactions.Add(transaction);
 
             user.TotalBalance += isIncome ? amount : -amount;
+            StaticValue.TotalBalance = user.TotalBalance;
 
             await WriteUsersToFile(users);
 
@@ -164,22 +164,23 @@ namespace Expenses_tracker.Services
         public static async Task WriteUsersToFile(List<User> users)
         {
             var json =JsonSerializer.Serialize(users, new JsonSerializerOptions { WriteIndented = true });
-            await File.WriteAllTextAsync(FilePath, json);
+            await File.WriteAllTextAsync(StaticValue.filePath, json);
         }
         public static async Task<List<User>> ReadUsersFromFile()
         {
-            if (!File.Exists(FilePath))
+            if (!File.Exists(StaticValue.filePath))
             {
                 return new List<User>();
             }
 
-            var json = await File.ReadAllTextAsync(FilePath);
+            var json = await File.ReadAllTextAsync(StaticValue.filePath);
             return JsonSerializer.Deserialize<List<User>>(json) ?? new List<User>();
         }
-        public async Task UpdateUserDebt(string userId, DebtModels updatedDebt)
+        public async Task<bool> UpdateUserDebt(string userId, DebtModels updatedDebt)
         {
             var users = await ReadUsersFromFile();
             var user = users.FirstOrDefault(u => u.Id == userId);
+            String ErrorMessage;
 
             if (user != null)
             {
@@ -188,8 +189,18 @@ namespace Expenses_tracker.Services
                 {
                     if (!debt.IsPaid && updatedDebt.IsPaid)
                     {
-                        // Deduct the debt amount from the user's total balance
-                        user.TotalBalance -= debt.Amount;
+                        if (StaticValue.TotalBalance <= 0 || StaticValue.TotalBalance < updatedDebt.Amount)
+                        {
+                            return false;
+                        }
+                        else
+                        {
+
+                            // Deduct the debt amount from the user's total balance
+                            user.TotalBalance -= debt.Amount;
+                            StaticValue.TotalBalance = user.TotalBalance;
+                        }
+                        
                     }
 
                     // Update the debt
@@ -199,6 +210,7 @@ namespace Expenses_tracker.Services
                     await WriteUsersToFile(users);
                 }
             }
+            return true;
         }
 
 
